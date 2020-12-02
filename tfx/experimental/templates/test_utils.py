@@ -117,7 +117,7 @@ class BaseEndToEndTest(tf.test.TestCase):
       long indented line
     # OTHER STUFF
 
-    Args:
+    Arguments:
       filepath: file to modify.
       variables: List of variables.
 

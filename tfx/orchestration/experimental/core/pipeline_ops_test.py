@@ -193,7 +193,10 @@ class PipelineOpsTest(tu.TfxTest):
       thread.start()
 
       pipeline_ops.stop_pipeline(
-          m, task_lib.PipelineUid.from_pipeline(pipeline1), timeout_secs=5.0)
+          m,
+          task_lib.PipelineUid.from_pipeline(pipeline1),
+          timeout_secs=5.0,
+          wait_tick_duration_secs=0.1)
 
       thread.join()
 
@@ -207,7 +210,10 @@ class PipelineOpsTest(tu.TfxTest):
           'Timed out.*waiting for execution inactivation.'
       ) as exception_context:
         pipeline_ops.stop_pipeline(
-            m, task_lib.PipelineUid.from_pipeline(pipeline1), timeout_secs=1.0)
+            m,
+            task_lib.PipelineUid.from_pipeline(pipeline1),
+            timeout_secs=1.0,
+            wait_tick_duration_secs=0.1)
       self.assertEqual(status_lib.Code.DEADLINE_EXCEEDED,
                        exception_context.exception.code)
 

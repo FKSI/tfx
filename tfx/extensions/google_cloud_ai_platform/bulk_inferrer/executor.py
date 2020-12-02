@@ -33,10 +33,10 @@ from tfx.proto import bulk_inferrer_pb2
 from tfx.types import artifact_utils
 from tfx.utils import json_utils
 from tfx.utils import path_utils
-from tfx.utils import proto_utils
 from tfx.utils import telemetry_utils
 from tfx_bsl.public.proto import model_spec_pb2
 
+from google.protobuf import json_format
 from tensorflow.python.saved_model import loader_impl  # pylint:disable=g-direct-tensorflow-import
 # TODO(b/140306674): Stop using the internal TF API.
 
@@ -86,20 +86,11 @@ class Executor(bulk_inferrer_executor.Executor):
       None
     """
     self._log_startup(input_dict, output_dict, exec_properties)
-
-    if output_dict.get('inference_result'):
-      inference_result = artifact_utils.get_single_instance(
-          output_dict['inference_result'])
-    else:
-      inference_result = None
-    if output_dict.get('output_examples'):
-      output_examples = artifact_utils.get_single_instance(
-          output_dict['output_examples'])
-    else:
-      output_examples = None
-
     if 'examples' not in input_dict:
       raise ValueError('\'examples\' is missing in input dict.')
+    if 'inference_result' not in output_dict:
+      raise ValueError('\'inference_result\' is missing in output dict.')
+    output = artifact_utils.get_single_instance(output_dict['inference_result'])
     if 'model' not in input_dict:
       raise ValueError('Input models are not valid, model '
                        'need to be specified.')
@@ -107,6 +98,7 @@ class Executor(bulk_inferrer_executor.Executor):
       model_blessing = artifact_utils.get_single_instance(
           input_dict['model_blessing'])
       if not model_utils.is_model_blessed(model_blessing):
+        output.set_int_custom_property('inferred', 0)
         logging.info('Model on %s was not blessed', model_blessing.uri)
         return
     else:
@@ -141,11 +133,7 @@ class Executor(bulk_inferrer_executor.Executor):
     inference_spec = self._get_inference_spec(model_path, model_version,
                                               ai_platform_serving_args)
     data_spec = bulk_inferrer_pb2.DataSpec()
-    proto_utils.json_to_proto(exec_properties['data_spec'], data_spec)
-    output_example_spec = bulk_inferrer_pb2.OutputExampleSpec()
-    if exec_properties.get('output_example_spec'):
-      proto_utils.json_to_proto(exec_properties['output_example_spec'],
-                                output_example_spec)
+    json_format.Parse(exec_properties['data_spec'], data_spec)
     api = discovery.build(service_name, api_version)
     new_model_created = False
     try:
@@ -160,12 +148,12 @@ class Executor(bulk_inferrer_executor.Executor):
           skip_model_creation=True,
           set_default_version=False,
       )
-      self._run_model_inference(data_spec, output_example_spec,
-                                input_dict['examples'], output_examples,
-                                inference_result, inference_spec)
+      self._run_model_inference(data_spec, input_dict['examples'], output.uri,
+                                inference_spec)
     except Exception as e:
       logging.error('Error in executing CloudAIBulkInferrerComponent: %s',
                     str(e))
+      output.set_int_custom_property('inferred', 0)
       raise
     finally:
       # Guarantee newly created resources are cleaned up even if theinference
@@ -176,6 +164,8 @@ class Executor(bulk_inferrer_executor.Executor):
                                                      ai_platform_serving_args)
       if new_model_created:
         runner.delete_model_from_aip_if_exists(api, ai_platform_serving_args)
+    # Mark the inferenence as successful after resources are cleaned up.
+    output.set_int_custom_property('inferred', 1)
 
   def _get_inference_spec(
       self, model_path: Text, model_version: Text,

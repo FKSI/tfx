@@ -29,9 +29,10 @@ from tfx.types import artifact_utils
 from tfx.types import standard_artifacts
 from tfx.utils import json_utils
 from tfx.utils import path_utils
-from tfx.utils import proto_utils
 from tfx.utils import telemetry_utils
 from tfx_bsl.public.proto import model_spec_pb2
+
+from google.protobuf import json_format
 
 
 class ExecutorTest(tf.test.TestCase):
@@ -93,7 +94,8 @@ class ExecutorTest(tf.test.TestCase):
     # Create exe properties.
     exec_properties = {
         'data_spec':
-            proto_utils.proto_to_json(bulk_inferrer_pb2.DataSpec()),
+            json_format.MessageToJson(
+                bulk_inferrer_pb2.DataSpec(), preserving_proto_field_name=True),
         'custom_config':
             json_utils.dumps(
                 {executor.SERVING_ARGS_KEY: ai_platform_serving_args}),
@@ -115,7 +117,6 @@ class ExecutorTest(tf.test.TestCase):
     inference_endpoint.ai_platform_prediction_model_spec.CopyFrom(
         ai_platform_prediction_model_spec)
     mock_run_model_inference.assert_called_once_with(mock.ANY, mock.ANY,
-                                                     mock.ANY, mock.ANY,
                                                      mock.ANY,
                                                      inference_endpoint)
     executor_class_path = '%s.%s' % (bulk_inferrer.__class__.__module__,
@@ -158,7 +159,8 @@ class ExecutorTest(tf.test.TestCase):
     # Create exe properties.
     exec_properties = {
         'data_spec':
-            proto_utils.proto_to_json(bulk_inferrer_pb2.DataSpec()),
+            json_format.MessageToJson(
+                bulk_inferrer_pb2.DataSpec(), preserving_proto_field_name=True),
         'custom_config':
             json_utils.dumps(
                 {executor.SERVING_ARGS_KEY: ai_platform_serving_args}),
@@ -180,7 +182,6 @@ class ExecutorTest(tf.test.TestCase):
     inference_endpoint.ai_platform_prediction_model_spec.CopyFrom(
         ai_platform_prediction_model_spec)
     mock_run_model_inference.assert_called_once_with(mock.ANY, mock.ANY,
-                                                     mock.ANY, mock.ANY,
                                                      mock.ANY,
                                                      inference_endpoint)
     executor_class_path = '%s.%s' % (bulk_inferrer.__class__.__module__,
@@ -223,7 +224,8 @@ class ExecutorTest(tf.test.TestCase):
     # Create exe properties.
     exec_properties = {
         'data_spec':
-            proto_utils.proto_to_json(bulk_inferrer_pb2.DataSpec()),
+            json_format.MessageToJson(
+                bulk_inferrer_pb2.DataSpec(), preserving_proto_field_name=True),
         'custom_config':
             json_utils.dumps(
                 {executor.SERVING_ARGS_KEY: ai_platform_serving_args}),

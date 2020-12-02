@@ -1,42 +1,21 @@
 # Current Version(Still in Development)
 
 ## Major Features and Improvements
-
 *   Added a skeleton of CLI support for Kubeflow V2 runner, and implemented
     support for pipeline operations.
 *   Added an experimental template to use with Kubeflow V2 runner.
 *   Added sanitization of user-specified pipeline name in Kubeflow V2 runner.
-*   Supported output examples artifact for BulkInferrer which can be used to
-    link with downstream training.
-*   In the published TFX container image, wheel files are now used to install
-    TFX, and the TFX source code has been moved to `/tfx/src`.
-*   TFX Transform switched to a (notably) faster implementation of
-    `tft.quantiles` analyzer.
 
 ## Breaking changes
-*   Wheel package building for TFX has changed, and users need to follow the
-    [new TFX package build instructions]
-    (https://github.com/tensorflow/tfx/blob/master/package_build/README.md) to
-    build wheels for TFX.
-*   Migrated `deployment_config` in Kubeflow V2 runner from `Any` proto message
-    to `Struct`, to ensure compatibility across different copies of the proto
-    libraries.
 
 ### For pipeline authors
-*   The `tfx.dsl.io.fileio` filesystem handler will delegate to
-    `tensorflow.io.gfile` for any unknown filesystem schemes if TensorFlow
-    is installed.
 
 ### For component authors
 
 ## Deprecations
 
-*   TrainerFnArgs is deprecated by FnArgs.
-
 ## Bug fixes and other changes
-*   Official TFX container image's entrypoint is changed so the image can be
-    used as a custom worker for Dataflow.
-*   Depends on 'keras-tuner>=1,<1.0.2'.
+*  Depends on 'keras-tuner>=1,<1.0.2'.
 
 ## Documentation updates
 
@@ -79,7 +58,6 @@
     [Kubeflow IR spec](https://github.com/kubeflow/pipelines/blob/master/api/v2alpha1/pipeline_spec.proto).
     Same as `KubeflowDagRunner` it will compile the DSL pipeline into a payload
     but not trigger the execution locally.
-*   Added compile time check for schema mismatch in Kubeflow V2 runner.
 *   Added 'penguin' example. Penguin example uses Palmer Penguins dataset and
     classify penguin species using four numeric features.
 *   Iris e2e examples are replaced by penguin examples.
@@ -90,8 +68,6 @@
     of IR to learn more details.
 *   Supports forward compatibility when evolving TFX artifact types, which
     allows jobs of old release and new release run with the same MLMD instance.
-*   Graduated the portable/beam_dag_runner.py to beam/beam_dag_runner.py
-
 
 ## Breaking changes
 

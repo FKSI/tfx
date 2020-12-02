@@ -92,9 +92,8 @@ def resolve_placeholder_expression(
   try:
     result = _ExpressionResolver(context).resolve(expression)
   except NullDereferenceError as err:
-    logging.warning(
-        "Dereferenced None during placeholder evaluation. Ignoring.")
-    logging.warning("Placeholder=%s", err.placeholder)
+    logging.warn("Dereferenced None during placeholder evaluation. Ignoring.")
+    logging.warn("Placeholder=%s", err.placeholder)
     return None
   if not isinstance(result, _PlaceholderResolvedTypes):
     raise ValueError(
@@ -167,16 +166,19 @@ class _ExpressionResolver:
     if placeholder.type == placeholder_pb2.Placeholder.Type.EXEC_INVOCATION:
       return context
 
+    if placeholder.type == placeholder_pb2.Placeholder.Type.EXEC_PROPERTY:
+      if placeholder.key in context:
+        return context[placeholder.key]
+      else:
+        raise NullDereferenceError(placeholder)
+
     # Handle remaining placeholder types.
     try:
       return context[placeholder.key]
     except KeyError as e:
-      # Handle placeholders that access a missing optional channel or exec
-      # property. In both cases the requested key will not be present in the
-      # context. However this means we cannot distinguish between a correct
-      # placeholder with an optional value vs. an incorrect placeholder.
-      # TODO(b/172001324): Handle this at compile time.
-      raise NullDereferenceError(placeholder)
+      raise KeyError(
+          f"Failed to find key {placeholder.key} of placeholder type "
+          f"{placeholder_pb2.Placeholder.Type.Name(placeholder.type)}.") from e
 
   def _resolve_placeholder_operator(
       self, placeholder_operator: placeholder_pb2.PlaceholderExpressionOperator
@@ -252,9 +254,9 @@ class _ExpressionResolver:
     if value is None:
       raise NullDereferenceError(op.expression)
     if isinstance(value, str):
-      return base64.urlsafe_b64encode(value.encode()).decode("ascii")
+      return base64.b64encode(value.encode()).decode("ascii")
     elif isinstance(value, bytes):
-      return base64.urlsafe_b64encode(value).decode("ascii")
+      return base64.b64encode(value).decode("ascii")
     else:
       raise ValueError(
           f"Failed to Base64 encode {value} of type {type(value)}.")
