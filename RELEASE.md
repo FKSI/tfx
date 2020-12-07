@@ -37,6 +37,7 @@
 *   Official TFX container image's entrypoint is changed so the image can be
     used as a custom worker for Dataflow.
 *   Depends on 'keras-tuner>=1,<1.0.2'.
+*   Depends on 'kfp-pipeline-spec>=0.1.3,<0.2'.
 
 ## Documentation updates
 
