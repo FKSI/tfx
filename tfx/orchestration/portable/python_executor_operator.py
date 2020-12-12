@@ -72,6 +72,7 @@ class PythonExecutorOperator(base_executor_operator.BaseExecutorOperator):
     super().__init__(executor_spec)
     python_class_executor_spec = cast(
         executable_spec_pb2.PythonClassExecutableSpec, self._executor_spec)
+    print("I'm here class_path: ", python_class_executor_spec.class_path)
     self._executor_cls = import_utils.import_class_by_path(
         python_class_executor_spec.class_path)
     self.extra_flags = []

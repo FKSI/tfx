@@ -17,6 +17,7 @@
     overriden by passing `force_tf_compat_v1=False` and enabling TF 2 behaviors.
     The default behavior for TF 2 will be switched to the new native
     implementation in a future release.
+*   Migrate LocalDagRunner to the new [IR](https://github.com/tensorflow/tfx/blob/master/tfx/proto/orchestration/pipeline.proto) stack.
 
 ## Breaking changes
 *   Wheel package building for TFX has changed, and users need to follow the
