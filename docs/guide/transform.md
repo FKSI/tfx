@@ -27,7 +27,6 @@ transform_training = components.Transform(
 transform_eval = components.Transform(
     examples=examples_gen.outputs['eval_examples'],
     schema=infer_schema.outputs['schema'],
-    transform_dir=transform_training.outputs['output'],
     name='transform-eval')
 ```
 
